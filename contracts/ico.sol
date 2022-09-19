@@ -31,13 +31,13 @@ contract ICO is Ownable{
     address payable private immutable wallet;
 
     struct ICOdata{
-        uint rate;
-        uint supply;
-        uint end;
-        uint sold;
+        uint256 rate;
+        uint256 supply;
+        uint256 end;
+        uint256 sold;
     }
 
-    ICOdata[] private ICOdatas;
+    mapping(uint256=>ICOdata) private ICOdatas;
 
 
     constructor (IERC20 _token, address payable _wallet) 
@@ -46,9 +46,9 @@ contract ICO is Ownable{
         token = IERC20(_token);
         wallet = _wallet;
 
-        ICOdatas[0]=ICOdata(50000, 125000000,0,0);
-        ICOdatas.push(ICOdata(50000, 250000000,0,0));
-        ICOdatas.push(ICOdata(50000, 250000000,0,0));
+        ICOdatas[0]=ICOdata(144, 125000000,0,0);
+        ICOdatas[1]=ICOdata(144, 250000000,0,0);
+        ICOdatas[2]=ICOdata(144, 250000000,0,0);
      
 
     }

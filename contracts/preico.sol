@@ -40,7 +40,7 @@ contract preico is Ownable{
     {
         token = IERC20(_token);
         wallet = _wallet;
-        ICOdatas=ICOdata(500000, 900000000,0,0);
+        ICOdatas=ICOdata(144, 900000000,0,0);
     }
 
 

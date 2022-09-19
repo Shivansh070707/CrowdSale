@@ -8,6 +8,7 @@ import "./capcrowdsale.sol";
 import "./timedcrowdsale.sol";
 import "./crowdsale.sol";
 import "./Extras/tokentimelock.sol";
+import './Extras/vesting.sol';
 
 contract Crowd_Token is Crowdsale, CappedCrowdsale, TimedCrowdsale {
     // Track Contributions
@@ -22,27 +23,33 @@ contract Crowd_Token is Crowdsale, CappedCrowdsale, TimedCrowdsale {
     address private admin;
 
     // Token Distribution
+    uint256 public PrivateToken=900000000;
     uint256 public ICOToken=2500000000;
     uint256 public MarketingToken=1700000000;
     uint256 public founderCommunityToken=1000000000;
-    uint256 public AdvisorToken=500000000;
-    uint256 public ReservesToken=1500000000;
-    uint256 public StakingToken=1000000000;
-    uint256 public futuresToken=500000000;
+    uint256 public AdvisorToken=300000000;
+    uint256 public EcoSystemToken=1100000000;
+    uint256 public TreasuryToken=2500000000;
 
     // Token reserve funds
-    address ICO=0x03D2434Ef06Ca621aeB961F399cFEAE1A2134D7F;
+    address public Private;
+    address ICO;
     address public Marketing=0x8005Bd2698fD7dd63B92132530D961915fbD1B4C;
     address public founderCommunity=0x718148ff5E44254ac51a9D2D544fdd168c1a85D4;
     address public Advisor=0x6C763a8E16266c05e796f5798C88FF1305c4878d;
-    address public Reserves=0x02E839EF8a2e3812eCcf7ad6119f48aB2560228a;
-    address public Staking=0xfE30c9B5495EfD5fC81D8969483acfE6Efe08d61;
-    address public futures=0x6203F881127C9F4f1DdE0e7de9C23c8C9289c34D;
+    address public EcoSystem=0x02E839EF8a2e3812eCcf7ad6119f48aB2560228a;
+    address public Treasury=0xfE30c9B5495EfD5fC81D8969483acfE6Efe08d61;
+  
 
     // Token Time lock
     uint256 public releaseTime;
     address public foundersTimelock;
-
+    address public ICOTimelock;
+    address public PrivateTimelock;
+    address public MarketingTimelock;
+    address public AdvisorTimelock;
+    address public EcoSystemTimelock;
+    
 
     bool private _finalized;
     event CrowdsaleFinalized();
@@ -55,7 +62,9 @@ contract Crowd_Token is Crowdsale, CappedCrowdsale, TimedCrowdsale {
         uint256 _cap,
         uint256 _openingTime,
         uint256 _closingTime,
-        uint256 _releaseTime
+        uint256 _releaseTime,
+        address preico,
+        address ico
     ) 
         Crowdsale(_rate, _wallet, _token)
         CappedCrowdsale(_cap)
@@ -64,6 +73,8 @@ contract Crowd_Token is Crowdsale, CappedCrowdsale, TimedCrowdsale {
         releaseTime = _releaseTime;
         _finalized = false;
         admin = msg.sender;
+        Private=preico;
+        ICO=ico;
         
     }
 
@@ -110,31 +121,45 @@ contract Crowd_Token is Crowdsale, CappedCrowdsale, TimedCrowdsale {
         return _finalized;
     }
 
+
     function finalize() public {
         require(msg.sender == admin, "No access to call function");
         require(!_finalized, "FinalizedCrowdsale: already finalized");
-        require(hasClosed(), "FinalizableCrowdsale: crowdsale has not closed");
+        //require(hasClosed(), "FinalizableCrowdsale: crowdsale has not closed");
 
-       Token funtoken;
-
-   //_token = funtoken;
+       Token funtoken=_token;
+      
        // uint256 alreadyMinted = funtoken.totalSupply();
         uint256 decimalfactor = 1e18;
 
         //uint256 _finalTokenSupply = (alreadyMinted / tokenSalePercentage) * 100;
 
-        TokenTimelock _foundersTimelock = new TokenTimelock(funtoken, founderCommunity, releaseTime);
+        // TokenTimelock _foundersTimelock = new TokenTimelock(funtoken, founderCommunity, releaseTime);
+        Vesting _PrivateTimelock = new Vesting(_token,Private,[1695137583],[900000000]);
+        Vesting _foundersTimelock = new Vesting(_token,founderCommunity,[1726759983,1758295983,1789831983],[400000000,300000000,300000000]);
+        Vesting _AdvisorTimelock = new Vesting(_token,Advisor,[1695137583,1726759983,1758295983],[100000000,100000000,100000000]);
+        Vesting _MarketingTimelock = new Vesting(_token,Marketing,[1695137583,1726759983,1758295983,1789831983,1821367983],[500000000,300000000,300000000,300000000,300000000]);
+        Vesting _ICOTimelock = new Vesting(_token,ICO,[1695137583,1726759983,1758295983,1789831983,1821367983],[500000000,500000000,500000000,500000000,500000000]);
+        Vesting _EcoSystemTimelock = new Vesting(_token,EcoSystem,[1758295983,1789831983,1821367983],[400000000,400000000,300000000]);
+    
+       
 
         foundersTimelock = address(_foundersTimelock);
+        ICOTimelock=address(_ICOTimelock);
+        PrivateTimelock=address(_PrivateTimelock);
+        MarketingTimelock=address(_MarketingTimelock);
+        AdvisorTimelock=address(_AdvisorTimelock);
+        EcoSystemTimelock=address(_EcoSystemTimelock);
 
 
         funtoken.mint(foundersTimelock, (founderCommunityToken * decimalfactor) );
-        funtoken.mint(ICO,ICOToken * decimalfactor);
-        funtoken.mint(Marketing,MarketingToken * decimalfactor);
-        funtoken.mint(Advisor,AdvisorToken * decimalfactor);
-        funtoken.mint(Reserves,ReservesToken * decimalfactor);
-        funtoken.mint(Staking,StakingToken * decimalfactor);
-        funtoken.mint(futures,futuresToken * decimalfactor);
+        funtoken.mint(ICOTimelock,ICOToken * decimalfactor);
+        funtoken.mint(PrivateTimelock,PrivateToken * decimalfactor);
+        funtoken.mint(MarketingTimelock,MarketingToken * decimalfactor);
+        funtoken.mint(AdvisorTimelock,AdvisorToken * decimalfactor);
+        funtoken.mint(EcoSystem,EcoSystemToken * decimalfactor);
+        funtoken.mint(Treasury,TreasuryToken * decimalfactor);
+    
 
         _finalized = true;
 
@@ -144,4 +169,4 @@ contract Crowd_Token is Crowdsale, CappedCrowdsale, TimedCrowdsale {
 
     function _finalization() internal {} 
 
-} 
+}

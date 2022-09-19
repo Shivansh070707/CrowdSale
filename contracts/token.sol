@@ -1,27 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.5;
 
-contract Ownable {
-
-    address public owner;
-
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
-    constructor(){
-        owner = msg.sender;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
-    }
-
-    function transferOwnership(address newOwner) public onlyOwner {
-        require(newOwner != address(0));
-        emit OwnershipTransferred(owner, newOwner);
-        owner = newOwner;
-    }
-}
+import './utils/Ownable.sol';
 contract Token is Ownable {
     string public name;
     string public symbol;
@@ -30,6 +10,7 @@ contract Token is Ownable {
     uint256 decimalfactor;
     uint256 public Max_Token;
     bool mintAllowed=true;
+
 
     mapping (address => uint256) public balanceOf;
     mapping (address => mapping (address => uint256)) public allowance;
@@ -120,7 +101,7 @@ contract Token is Ownable {
         if(Max_Token==(totalSupply+_value)){
             mintAllowed=false;
         }
-        require(msg.sender == owner,"Only Owner Can Mint");
+        //require(msg.sender == owner,"Only Owner Can Mint");
         balanceOf[_to] += _value;
         totalSupply +=_value;
         require(balanceOf[_to] >= _value);
