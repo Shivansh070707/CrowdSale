@@ -11,113 +11,161 @@ import '../utils/Ownable.sol';
 contract Vesting is Ownable, Pausable {
 
     using SafeMath for uint256;
-  
 
-    struct Release {
-        uint256 timestamp;
-        uint256 amount;
-        bool released;
-    }
-
-    Release[] public _releases;
-
-    // IERC20 basic token contract being held
+    // IERC20 basic Token_ contract being held
     IERC20  public Token_;
-
-    // beneficiary of tokens after they are released
-    address  public beneficiary;
     
+    struct Grant {
+    uint256 value;
+    uint256 start;
+    uint256 cliff;
+    uint256 end;
+    uint256 transferred;
+    bool revokable;
+    }
 
+    // Grants holder.
+    mapping (address => Grant) public grants;
 
-  constructor(IERC20 token_, address beneficiary_, uint32[] memory releaseTimestamps_, uint32[] memory releaseAmounts_) {
+    // Total tokens available for vesting.
+    uint256 public totalVesting;
 
-        require(releaseTimestamps_.length == releaseAmounts_.length, "TokenTimeLock: Invalid release schedule");
+    event NewGrant(address indexed _from, address indexed _to, uint256 _value);
+    event UnlockGrant(address indexed _holder, uint256 _value);
+    event RevokeGrant(address indexed _holder, uint256 _refund);
 
-        Token_ = token_;
-        beneficiary = beneficiary_;
+    /// @dev Constructor that initializes the address of the SirnSmartToken contract.
+    /// @param _token SirinSmartToken The address of the previously deployed SirnSmartToken smart contract.
+    constructor(IERC20 _token) {
+        //require(_token != address(0));
 
-        for (uint256 i = 0; i < releaseTimestamps_.length; i++) {
-            _releases.push(Release(releaseTimestamps_[i], releaseAmounts_[i], false));
+        Token_ = _token;
+    }
+
+    /// @dev Grant tokens to a specified address.
+    /// @param _to address The address to grant tokens to.
+    /// @param _value uint256 The amount of tokens to be granted.
+    /// @param _start uint256 The beginning of the vesting period.
+    /// @param _cliff uint256 Duration of the cliff period.
+    /// @param _end uint256 The end of the vesting period.
+    /// @param _revokable bool Whether the grant is revokable or not.
+    function grant(address _to, uint256 _value, uint256 _start, uint256 _cliff, uint256 _end, bool _revokable)
+    public onlyOwner {
+        require(_to != address(0));
+        require(_value > 0);
+
+        // Make sure that a single address can be granted tokens only once.
+        require(grants[_to].value == 0);
+
+        // Check for date inconsistencies that may cause unexpected behavior.
+        require(_start <= _cliff && _cliff <= _end);
+
+        // Check that this grant doesn't exceed the total amount of tokens currently available for vesting.
+        require(totalVesting.add(_value) <= Token_.balanceOf(address(this)));
+
+        // Assign a new grant.
+        grants[_to] = Grant({
+        value: _value,
+        start: _start,
+        cliff: _cliff,
+        end: _end,
+        transferred: 0,
+        revokable: _revokable
+        });
+
+        // Tokens granted, reduce the total amount available for vesting.
+        totalVesting = totalVesting.add(_value);
+
+        NewGrant(msg.sender, _to, _value);
+    }
+
+    /// @dev Revoke the grant of tokens of a specifed address.
+    /// @param _holder The address which will have its tokens revoked.
+    function revoke(address _holder) public onlyOwner {
+        Grant memory grant = grants[_holder];
+
+        require(grant.revokable);
+
+        // Send the remaining STX back to the owner.
+        uint256 refund = grant.value.sub(grant.transferred);
+
+        // Remove the grant.
+        delete grants[_holder];
+
+        totalVesting = totalVesting.sub(refund);
+        Token_.transfer(msg.sender, refund);
+
+        RevokeGrant(_holder, refund);
+    }
+
+    /// @dev Calculate the total amount of vested tokens of a holder at a given time.
+    /// @param _holder address The address of the holder.
+    /// @param _time uint256 The specific time.
+    /// @return a uint256 representing a holder's total amount of vested tokens.
+    function vestedTokens(address _holder, uint256 _time) public returns (uint256) {
+        Grant memory grant = grants[_holder];
+        if (grant.value == 0) {
+            return 0;
         }
 
+        return calculateVestedTokens(grant, _time);
     }
 
-    /**
-     * @return the token being held.
-     */
-    function Token() external view virtual returns (IERC20) {
-        return Token_;
-    }
-
-    /**
-     * @return the beneficiary of the tokens.
-     */
-    function Beneficiary() external view virtual returns (address) {
-        return beneficiary;
-    }
-
-    /**
-     * @return the time when the tokens are released.
-     */
-    function getReleaseAmount() external view virtual returns (uint256) {
-
-        uint256 releaseAmount = 0;
-
-        for (uint256 i = 0; i < _releases.length; i++) {
-            Release memory r = _releases[i];
-
-            if(!r.released && block.timestamp >= r.timestamp)
-                releaseAmount = releaseAmount.add(r.amount);
+    /// @dev Calculate amount of vested tokens at a specifc time.
+    /// @param _grant Grant The vesting grant.
+    /// @param _time uint256 The time to be checked
+    /// @return An uint256 representing the amount of vested tokens of a specific grant.
+    ///   |                         _/--------   vestedTokens rect
+    ///   |                       _/
+    ///   |                     _/
+    ///   |                   _/
+    ///   |                 _/
+    ///   |                /
+    ///   |              .|
+    ///   |            .  |
+    ///   |          .    |
+    ///   |        .      |
+    ///   |      .        |
+    ///   |    .          |
+    ///   +===+===========+---------+----------> time
+    ///     Start       Cliff      End
+    function calculateVestedTokens(Grant memory _grant, uint256 _time) private returns (uint256) {
+        // If we're before the cliff, then nothing is vested.
+        if (_time < _grant.cliff) {
+            return 0;
         }
 
-        return releaseAmount;
-    }
-
-    /**
-     * @notice Transfers tokens held by timeLock to beneficiary.
-     */
-    function release() external virtual onlyOwner whenNotPaused {
-
-        require(Token_.balanceOf(address(this)) > 0, "TokenTimeLock: no tokens held by contract");
-
-        uint256 releaseAmount = 0;
-
-        for (uint256 i = 0; i < _releases.length; i++) {
-            Release storage r = _releases[i];
-
-            if(!r.released && block.timestamp >= r.timestamp && releaseAmount < Token_.balanceOf(address(this)) ){
-                  releaseAmount = releaseAmount.add(r.amount);
-                  r.released = true;
-
-            }
+        // If we're after the end of the vesting period - everything is vested;
+        if (_time >= _grant.end) {
+            return _grant.value;
         }
 
-
-        require(releaseAmount > 0, "TokenTimeLock: no tokens to release");
-
-        if(releaseAmount > Token_.balanceOf(address(this)))
-            releaseAmount = Token_.balanceOf(address(this));
-
-        Token_.transfer(beneficiary, releaseAmount);
+        // Interpolate all vested tokens: vestedTokens = tokens/// (time - start) / (end - start)
+        return _grant.value.mul(_time.sub(_grant.start)).div(_grant.end.sub(_grant.start));
     }
 
-    /// Withdraw any IERC20 tokens accumulated in this contract
-    function withdrawTokens(IERC20 _token2) external onlyOwner whenNotPaused {
-        _token2.transfer(owner(), _token2.balanceOf(address(this)));
-    }
+    /// @dev Unlock vested tokens and transfer them to their holder.
+    /// @return a uint256 representing the amount of vested tokens transferred to their holder.
+    function unlockVestedTokens() public {
+        Grant memory grant = grants[msg.sender];
+        require(grant.value != 0);
 
-    function getOwner() external view returns (address) {
-        return owner();
-    }
+        // Get the total amount of vested tokens, acccording to grant.
+        uint256 vested = calculateVestedTokens(grant, block.timestamp);
+        if (vested == 0) {
+            return;
+        }
 
-    //
-    // IMPLEMENT PAUSABLE FUNCTIONS
-    //
-    function pause() external onlyOwner {
-        _pause();
-    }
+        // Make sure the holder doesn't transfer more than what he already has.
+        uint256 transferable = vested.sub(grant.transferred);
+        if (transferable == 0) {
+            return;
+        }
 
-    function unpause() external onlyOwner {
-        _unpause();
+        grant.transferred = grant.transferred.add(transferable);
+        totalVesting = totalVesting.sub(transferable);
+        Token_.transfer(msg.sender, transferable);
+
+        UnlockGrant(msg.sender, transferable);
     }
 }
