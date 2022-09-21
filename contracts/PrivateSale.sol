@@ -1,25 +1,25 @@
 //SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.3;
+pragma solidity 0.6.12;
 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
+import "./Extras/Interface/IERC20.sol";
+import "./Extras/access/Ownable.sol";
 contract preico is Ownable{
     //start time, end time, open to all, fixed supply, available on fixed rate, soft cap, hard cap
     //no minimum buying cap,
 
 
-    ///@notice For 1 wei you will be getting 2*1e12/decimalOfToken = 2*1e12/1e18 = c tokens
+    ///@dev For 1 wei you will be getting 2*1e12/decimalOfToken = 2*1e12/1e18 = c tokens
     //uint private rate1=4*1e12;
 
-    ///@notice For 1 wei you will be getting 2*1e12/decimalOfToken = 2*1e12/1e18 = 0.000002 tokens
+    ///@dev For 1 wei you will be getting 2*1e12/decimalOfToken = 2*1e12/1e18 = 0.000002 tokens
     //uint private rate2=2*1e12;
 
-    ///@notice For 1 wei you will be getting 2*1e12/decimalOfToken = 2*1e12/1e18 = 0.000001 tokens
-    //uint private rate3=1*1e12;
+    ///@dev For 1 wei you will be getting 2*1e12/decimalOfToken = 2*1e12/1e18 = 0.000001 tokens
+    // //uint private rate3=1*1e12;
 
-    ///@notice Total 20 Million tokens are to be sold at ICO in 3 stages which  are divided into 
-    ///        4 mil, 6 mil, 10 mil supply respectively
+    // /@dev Total 20 Million tokens are to be sold at ICO in 3 stages which  are divided into 
+    // /        4 mil, 6 mil, 10 mil supply respectively
 
 
     IERC20 private token;
@@ -36,7 +36,7 @@ contract preico is Ownable{
     ICOdata private ICOdatas;
 
 
-    constructor (IERC20 _token, address payable _wallet) 
+    constructor (IERC20 _token, address payable _wallet) public
     {
         token = IERC20(_token);
         wallet = _wallet;

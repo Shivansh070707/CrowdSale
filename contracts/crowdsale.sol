@@ -1,33 +1,36 @@
-// SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity 0.6.12;
 
-import "./token.sol";
-import "./Extras/tokenInterface.sol";
+import "./Token.sol";
+import "./Extras/Interface/IERC20.sol";
 import "./Extras/reentrancy.sol";
-import "./utils/context.sol";
-import "hardhat/console.sol";
+import "./Extras/utils/context.sol";
+import "./Extras/Interface/IERC20.sol";
+
+
+
 
 abstract contract Crowdsale is Context, ReentrancyGuard {
-    Token internal _token;
+    IERC20 internal _token;
     address payable internal _wallet;
     uint256 internal _rate;
     uint256 private _weiRaised;
 
     event TokensPurchased(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
-    constructor(uint256 rate_, address payable wallet_, Token token_) {
+    constructor(uint256 rate_, address payable wallet_, IERC20 token_) public {
         require(rate_ > 0, "Crowdsale: rate cannot be 0");
         require(wallet_ != address(0), "Crowdsale: wallet cannot be zero address");
         require(address(token_) != address(0), "Crowdsale: token address cannot be zero address");
 
         _rate = rate_;
         _wallet = wallet_;
-        _token = token_;
+        _token = IERC20(token_);
     }
 
-    function token() public view returns (Token) {
-        return _token;
+    function token() public view returns (address) {
+        return address(_token);
     }
 
     function wallet() public view returns (address payable) {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.5;
+pragma solidity 0.6.12;
 
-import './utils/Ownable.sol';
+import './Extras/access/Ownable.sol';
 contract Token is Ownable {
     string public name;
     string public symbol;
@@ -41,7 +41,7 @@ contract Token is Ownable {
 
     constructor (string memory SYMBOL, 
                 string memory NAME,
-                uint8 DECIMALS) {
+                uint8 DECIMALS) public{
         symbol=SYMBOL;
         name=NAME;
         decimals=DECIMALS;

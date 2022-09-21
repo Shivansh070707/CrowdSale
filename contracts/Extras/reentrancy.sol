@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Unlicense
 
-pragma solidity ^0.8.9;
+pragma solidity 0.6.12;
 
 abstract contract ReentrancyGuard {
     uint256 private constant _NOT_ENTERED = 1;
@@ -8,7 +8,7 @@ abstract contract ReentrancyGuard {
 
     uint256 private _status;
 
-    constructor() {
+    constructor() public {
         _status = _NOT_ENTERED;
     }
 
