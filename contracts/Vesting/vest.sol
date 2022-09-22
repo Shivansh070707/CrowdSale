@@ -3,17 +3,18 @@
 pragma solidity 0.6.12;
 import "../Extras/Library/Safemath.sol";
 import "../Extras/Interface/IERC20.sol";
-import "../Extras/access/Ownable.sol";
 
 
-contract Vesting is Ownable {
+
+contract Vesting  {
     using SafeMath for uint256;
   
 
     IERC20 private Token;
-    uint256 private tokensToVest = 0;
+    uint256 public tokensToVest = 0;
     uint256 private vestingId = 0;
     address internal Beneficiary;
+    address owner;
 
     string private constant INSUFFICIENT_BALANCE = "Insufficient balance";
     string private constant INVALID_VESTING_ID = "Invalid vesting id";
@@ -34,10 +35,16 @@ contract Vesting is Ownable {
     event TokenVestingAdded(uint256 indexed vestingId, address indexed beneficiary, uint256 amount);
     event TokenVestingRemoved(uint256 indexed vestingId, address indexed beneficiary, uint256 amount);
 
+    modifier onlyOwner(){
+        require(msg.sender==owner,"Only owner can run this");
+        _;
+    }
+
     constructor(IERC20 _token,address _beneficiary) public {
         require(address(_token) != address(0x0), "Matic token address is not valid");
         Token = _token;
         Beneficiary=_beneficiary;
+        owner=Beneficiary;
     }
 
     function token() public view returns (IERC20) {
@@ -47,8 +54,8 @@ contract Vesting is Ownable {
     function beneficiary(uint256 _vestingId) public view returns (address) {
         return vestings[_vestingId].beneficiary;
     }
-
-    function releaseTime(uint256 _vestingId) public view returns (uint256) {
+ 
+    function releaseTime(uint256 _vestingId) public view returns (uint256){
         return vestings[_vestingId].releaseTime;
     }
 
@@ -65,8 +72,9 @@ contract Vesting is Ownable {
         emit TokenVestingRemoved(_vestingId, vesting.beneficiary, vesting.amount);
     }
 
-    function addVesting(uint _startTime, uint256 _releaseTime, uint256 _amount) public onlyOwner {
+    function addVesting(uint _startTime, uint256 _releaseTime, uint256 _amount) public  {
         require(Beneficiary != address(0x0), INVALID_BENEFICIARY);
+        require(Token.balanceOf(address(this))>=_amount+tokensToVest);
         tokensToVest = tokensToVest.add(_amount);
         vestingId = vestingId.add(1);
         vestings[vestingId] = Vesting_({
@@ -95,6 +103,6 @@ contract Vesting is Ownable {
 
     function retrieveExcessTokens(uint256 _amount) public onlyOwner {
         require(_amount <= Token.balanceOf(address(this)).sub(tokensToVest), INSUFFICIENT_BALANCE);
-        Token.transfer(owner(), _amount);
+        Token.transfer(owner, _amount);
     }
 }

@@ -31,16 +31,24 @@ async function main() {
   console.log(
     `deployed to ${preico.address}`
   );
-  const ICO = await hre.ethers.getContractFactory("ICO");
-  const ico = await ICO.deploy(add,
-  '0x6e24689C13AeE0fabe6552f655607B71Cb425a44'
+  // const ICO = await hre.ethers.getContractFactory("ICO");
+  // const ico = await ICO.deploy(add,
+  // '0x6e24689C13AeE0fabe6552f655607B71Cb425a44'
   
-  );
+  // );
 
-  await ico.deployed();
+  // await ico.deployed();
+
+  // console.log(
+  //   `deployed to ${ico.address}`
+  // );
+  const Distribute = await hre.ethers.getContractFactory("Distribute");
+  const distribute = await Distribute.deploy(144,  );
+
+  await distribute.deployed();
 
   console.log(
-    `deployed to ${ico.address}`
+    `deployed to ${distribute.address}`
   );
 }
 

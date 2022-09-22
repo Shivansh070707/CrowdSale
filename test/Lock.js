@@ -51,9 +51,14 @@ describe("Exchange",async function(){
 
     it("gug",async function(){
         await data.connect(owner).finalize();
+       
         const add3= await data.PublicTimelock();
-        const bal= await data1.balanceOf(add3)
+        const vest = await ethers.getContractAt("Ivest",add3) 
+        // const Vest = await vest._deployed()
+       let bal= await vest.tokensToVest()
         expect(bal).to.equal(250)
+
+    
 
 })
 })

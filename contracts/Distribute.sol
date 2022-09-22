@@ -139,7 +139,7 @@ contract Distribute is Crowdsale {
 
 
         funtoken.mint(foundersTimelock, (founderCommunityToken * decimalfactor) );
-        funtoken.mint(PublicTimelock,PublicToken );
+        funtoken.mint(PublicTimelock,PublicToken * decimalfactor);
         funtoken.mint(Private,PrivateToken * decimalfactor);
         funtoken.mint(MarketingTimelock,MarketingToken * decimalfactor);
         funtoken.mint(AdvisorTimelock,AdvisorToken * decimalfactor);
