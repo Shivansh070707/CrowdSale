@@ -2,12 +2,12 @@
 
 pragma solidity 0.6.12;
 
-import "./Token.sol";
+import "./token.sol";
 import "./Extras/Interface/IERC20.sol";
 import "./crowdsale.sol";
-import './Vesting/vesting.sol';
+import './Vesting/vest.sol';
 
-contract Crowd_Token is Crowdsale {
+contract Distribute is Crowdsale {
   
     mapping(address => uint256) public contributions;
 
@@ -15,7 +15,7 @@ contract Crowd_Token is Crowdsale {
 
     // Token Distribution
     uint256 public PrivateToken=900000000;
-    uint256 public PublicToken=2500000000;
+    uint256 public PublicToken=250;
     uint256 public MarketingToken=1700000000;
     uint256 public founderCommunityToken=1000000000;
     uint256 public AdvisorToken=300000000;
@@ -24,6 +24,7 @@ contract Crowd_Token is Crowdsale {
 
     // Token reserve funds
     address public Private;
+    address public Public;
     address public Marketing=0x8005Bd2698fD7dd63B92132530D961915fbD1B4C;
     address public founderCommunity=0x718148ff5E44254ac51a9D2D544fdd168c1a85D4;
     address public Advisor=0x6C763a8E16266c05e796f5798C88FF1305c4878d;
@@ -32,7 +33,7 @@ contract Crowd_Token is Crowdsale {
   
 
     // Token Time lock
-    uint256 public releaseTime;
+
     address public foundersTimelock;
     address public PublicTimelock;
     address public PrivateTimelock;
@@ -50,20 +51,17 @@ contract Crowd_Token is Crowdsale {
         uint256 _rate,
         address payable _wallet,
         IERC20 _token,
-        uint256 _cap,
-        uint256 _openingTime,
-        uint256 _closingTime,
-        uint256 _releaseTime,
         address preico
       
     ) 
         Crowdsale(_rate, _wallet, _token) public
   
     {
-        releaseTime = _releaseTime;
+       
         _finalized = false;
         admin = msg.sender;
         Private=preico;
+        Public=_wallet;
       
         
     }
@@ -124,29 +122,30 @@ contract Crowd_Token is Crowdsale {
         // Vesting Vest = new Vesting(_token);
     
       
-        Vesting _foundersTimelock = new Vesting(_token,founderCommunity,1726759983,1758295983,1789831983,false);
-        Vesting _AdvisorTimelock = new Vesting(_token,Advisor,1695137583,1726759983,1758295983,false);
-        Vesting _MarketingTimelock = new Vesting(_token,Marketing,1695137583,1726759983,1758295983,false);
-        Vesting _PublicTimelock = new Vesting(_token,_wallet,1695137583,1726759983,1758295983,false);
-        Vesting _EcoSystemTimelock = new Vesting(_token,EcoSystem,1758295983,1789831983,1821367983,false);
+        Vesting _foundersTimelock = new Vesting(_token,founderCommunity);
+        Vesting _AdvisorTimelock = new Vesting(_token,Advisor);
+        Vesting _MarketingTimelock = new Vesting(_token,Marketing);
+        Vesting _PublicTimelock = new Vesting(_token,_wallet);
+        Vesting _EcoSystemTimelock = new Vesting(_token,EcoSystem);
     
        
 
         foundersTimelock = address(_foundersTimelock);
         PublicTimelock=address(_PublicTimelock);
         //PrivateTimelock=address(_PrivateTimelock);
-        //MarketingTimelock=address(_MarketingTimelock);
+        MarketingTimelock=address(_MarketingTimelock);
         AdvisorTimelock=address(_AdvisorTimelock);
         EcoSystemTimelock=address(_EcoSystemTimelock);
 
 
-        funtoken.mint(founderCommunity, (founderCommunityToken * decimalfactor) );
-        funtoken.mint(_wallet,PublicToken * decimalfactor);
+        funtoken.mint(foundersTimelock, (founderCommunityToken * decimalfactor) );
+        funtoken.mint(PublicTimelock,PublicToken );
         funtoken.mint(Private,PrivateToken * decimalfactor);
-        funtoken.mint(Marketing,MarketingToken * decimalfactor);
-        funtoken.mint(Advisor,AdvisorToken * decimalfactor);
-        funtoken.mint(EcoSystem,EcoSystemToken * decimalfactor);
+        funtoken.mint(MarketingTimelock,MarketingToken * decimalfactor);
+        funtoken.mint(AdvisorTimelock,AdvisorToken * decimalfactor);
+        funtoken.mint(EcoSystemTimelock,EcoSystemToken * decimalfactor);
         funtoken.mint(Treasury,TreasuryToken * decimalfactor);
+        _foundersTimelock.addVesting(64646,6666464,646);
         // Vest.grant(founderCommunity,400000000,1726759983,1789831983,1789838983,false);
     
 

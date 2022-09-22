@@ -2,7 +2,7 @@
 
 pragma solidity 0.6.12;
 
-import "./Token.sol";
+import "./token.sol";
 import "./Extras/Interface/IERC20.sol";
 import "./Extras/reentrancy.sol";
 import "./Extras/utils/context.sol";

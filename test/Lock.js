@@ -30,28 +30,30 @@ describe("Exchange",async function(){
         const preicoadd= preico.address;
         console.log(`deployed to ${preicoadd}`);
         
-        const ICO= await ethers.getContractFactory("ICO");
-        const ico= await ICO.deploy(tokenadd,owner.address)
-        await ico.deployed()
-        console.log(`deployed to ${ico.address}`);
+        // const ICO= await ethers.getContractFactory("ICO");
+        // const ico= await ICO.deploy(tokenadd,owner.address)
+        // await ico.deployed()
+        // console.log(`deployed to ${ico.address}`);
 
-        const CS= await ethers.getContractFactory("Crowd_Token");
-        const cs= await CS.deploy(144,owner.address,erc20.address,ethers.utils.parseEther('6250'),1663440740,1663866839,1694971079,preico.address,ico.address)
+        const CS= await ethers.getContractFactory("Distribute");
+        const cs= await CS.deploy(144,owner.address,erc20.address,preico.address)
         await cs.deployed()
         data=cs;
         console.log(`deployed to ${cs.address}`);
 
       
     })
-    it("will fetch private saletoken",async function(){
-        await data.connect(owner).finalize();
-        const bal= await new BigNumber(data1.balanceOf(preico.address));
-        expect(bal).to.equal(900000000)
-        
- 
-    })
+    // it("will fetch private saletoken",async function(){
+    //     await data.connect(owner).finalize();
+    //     const bal= await new data1.balanceOf(preico.address);
+    //     expect(bal).to.equal(9)
+    // })
 
-    it("",async function(){
+    it("gug",async function(){
+        await data.connect(owner).finalize();
+        const add3= await data.PublicTimelock();
+        const bal= await data1.balanceOf(add3)
+        expect(bal).to.equal(250)
 
 })
 })
