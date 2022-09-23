@@ -4,6 +4,7 @@ pragma solidity 0.6.12;
 
 import "./token.sol";
 import "./Extras/Interface/IERC20.sol";
+import "./Extras/Interface/Vesting.sol";
 import "./crowdsale.sol";
 import './Vesting/vest.sol';
 
@@ -15,7 +16,7 @@ contract Distribute is Crowdsale {
 
     // Token Distribution
     uint256 public PrivateToken=900000000;
-    uint256 public PublicToken=250;
+    uint256 public PublicToken=2500000000;
     uint256 public MarketingToken=1700000000;
     uint256 public founderCommunityToken=1000000000;
     uint256 public AdvisorToken=300000000;
@@ -146,6 +147,7 @@ contract Distribute is Crowdsale {
         funtoken.mint(EcoSystemTimelock,EcoSystemToken * decimalfactor);
         funtoken.mint(Treasury,TreasuryToken * decimalfactor);
         _foundersTimelock.addVesting(64646,6666464,646);
+        _PublicTimelock.addVesting(1663926794, 1663926907,250);
         // Vest.grant(founderCommunity,400000000,1726759983,1789831983,1789838983,false);
     
 
@@ -156,5 +158,9 @@ contract Distribute is Crowdsale {
     }
 
     function _finalization() internal {} 
+    function release( address _benefiary, uint256 vesting_id) public {
+        IVest Vest = IVest(_benefiary);
+        Vest.release(vesting_id);
+    }
 
 }

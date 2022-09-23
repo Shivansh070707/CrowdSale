@@ -49,16 +49,12 @@ describe("Exchange",async function(){
     //     expect(bal).to.equal(9)
     // })
 
-    it("gug",async function(){
+    it("should lock tokens and release after sometime and retrive balance",async function(){
         await data.connect(owner).finalize();
-       
-        const add3= await data.PublicTimelock();
-        const vest = await ethers.getContractAt("Ivest",add3) 
-        // const Vest = await vest._deployed()
-       let bal= await vest.tokensToVest()
-        expect(bal).to.equal(250)
-
-    
+       const add3= await data.PublicTimelock();
+       await data.release(add3,1);
+       const bal= await new data1.balanceOf(owner.address);
+       expect(bal).to.equal(250)
 
 })
 })
