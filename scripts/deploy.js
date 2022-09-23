@@ -21,10 +21,7 @@ async function main() {
   );
 
   const PREICO = await hre.ethers.getContractFactory("preico");
-  const preico = await PREICO.deploy(add,
-  '0x6e24689C13AeE0fabe6552f655607B71Cb425a44',50000,900000000
-  
-  );
+  const preico = await PREICO.deploy(add,'0x6e24689C13AeE0fabe6552f655607B71Cb425a44');
 
   await preico.deployed();
 
@@ -43,7 +40,7 @@ async function main() {
   //   `deployed to ${ico.address}`
   // );
   const Distribute = await hre.ethers.getContractFactory("Distribute");
-  const distribute = await Distribute.deploy(144,  );
+  const distribute = await Distribute.deploy(144,'0x6e24689C13AeE0fabe6552f655607B71Cb425a44',add  );
 
   await distribute.deployed();
 

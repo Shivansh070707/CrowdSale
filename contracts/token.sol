@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
+// network avalanche
+//token deployed to 0xEaA8Df0496B7B11229F6Ba98e0Ee24B2cb528ecC
+//pre ico deployed to 0x25Ce9bA5aE6147471987B107CDA18a2cB2B4273a
+//distribute deployed to 0xFC347fd6D85AcCd900D2671ce1245018dCB26b75
 
 import './Extras/access/Ownable.sol';
 contract Token is Ownable {
@@ -57,8 +61,8 @@ contract Token is Ownable {
     }
     
     function _transfer(address _from, address _to, uint _value) internal {
-        require(_to != address(0));
-        require(balanceOf[_from] >= _value);
+        require(_to != address(0),"zero address");
+        require(balanceOf[_from] >= _value,"Not enough balance");
         require(balanceOf[_to] + _value >= balanceOf[_to]);
         uint previousBalances = balanceOf[_from] + balanceOf[_to];
         balanceOf[_from] -= _value;

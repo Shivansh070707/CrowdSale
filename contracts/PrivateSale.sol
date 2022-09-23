@@ -29,6 +29,7 @@ contract preico is Ownable{
     struct ICOdata{
         uint rate;
         uint supply;
+        uint start;
         uint end;
         uint sold;
     }
@@ -40,12 +41,14 @@ contract preico is Ownable{
     {
         token = IERC20(_token);
         wallet = _wallet;
-        ICOdatas=ICOdata(144, 900000000,0,0);
+        ICOdatas=ICOdata(144, 900000000 ,0,0,0);
     }
 
 
-    function startSale(uint endTime) public onlyOwner{
-            ICOdatas.end = endTime;
+    function startSale() public onlyOwner{
+        uint oneyear = 31536000;
+            ICOdatas.start=block.timestamp;
+            ICOdatas.end = ICOdatas.start +oneyear;
     }
 
     function allowance() public view onlyOwner returns(uint){
@@ -57,7 +60,7 @@ contract preico is Ownable{
         require(_saleIsActive(),'Sale not active');
         uint amount = _calculate(msg.value);
         require(ICOdatas.sold + amount<=ICOdatas.supply,'Not enough tokens, try buying lesser amount');
-        token.transfer( msg.sender, amount);
+        token.transferFrom(wallet, msg.sender, amount);
         ICOdatas.sold+=amount;
         
     }
@@ -72,7 +75,7 @@ contract preico is Ownable{
     }
 
 
-    function _calculate(uint value) private view returns(uint){
+    function _calculate(uint value) public view returns(uint){
         return value*ICOdatas.rate;
     }
 
