@@ -32,7 +32,11 @@ contract Distribute is Crowdsale {
     address public EcoSystem=0x02E839EF8a2e3812eCcf7ad6119f48aB2560228a;
     address public Treasury=0xfE30c9B5495EfD5fC81D8969483acfE6Efe08d61;
   
-
+   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+       modifier onlyOwner() {
+        require(admin == _msgSender(), "Ownable: caller is not the owner");
+        _;
+    }
     // Token Time lock
 
     address public foundersTimelock;
@@ -162,5 +166,10 @@ contract Distribute is Crowdsale {
         IVest Vest = IVest(_benefiary);
         Vest.release(vesting_id);
     }
-
+     
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        emit OwnershipTransferred(admin, newOwner);
+        admin = newOwner;
+    }
 }

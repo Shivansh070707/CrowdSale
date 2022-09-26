@@ -40,7 +40,7 @@ async function main() {
   //   `deployed to ${ico.address}`
   // );
   const Distribute = await hre.ethers.getContractFactory("Distribute");
-  const distribute = await Distribute.deploy(144,'0x6e24689C13AeE0fabe6552f655607B71Cb425a44',add  );
+  const distribute = await Distribute.deploy(144,'0x07CEd93F06d289fac997BA876755011F0420A05E',add  );
 
   await distribute.deployed();
 
