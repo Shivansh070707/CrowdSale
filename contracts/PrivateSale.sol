@@ -1,10 +1,14 @@
 //SPDX-License-Identifier: MIT
 
-pragma solidity 0.6.12;
+pragma solidity ^0.6.0;
 
 import "./Extras/Interface/IERC20.sol";
 import "./Extras/access/Ownable.sol";
+import "./Extras/Library/Safemath.sol";
+import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
+
 contract preico is Ownable{
+    using SafeMath for uint256;
     //start time, end time, open to all, fixed supply, available on fixed rate, soft cap, hard cap
     //no minimum buying cap,
 
@@ -23,6 +27,10 @@ contract preico is Ownable{
 
 
     IERC20 private token;
+    AggregatorV3Interface internal priceFeedAvax;
+    AggregatorV3Interface internal priceFeedEth;
+
+    uint constant price =10;//USD
 
     address payable private immutable wallet;
 
@@ -41,7 +49,9 @@ contract preico is Ownable{
     {
         token = IERC20(_token);
         wallet = _wallet;
-        ICOdatas=ICOdata(144, 900000000 ,0,0,0);
+        ICOdatas=ICOdata(10, 900000000 ,0,0,0);
+        priceFeedAvax = AggregatorV3Interface(0x5498BB86BC934c8D34FDA08E81D444153d0D06aD);
+        priceFeedEth=AggregatorV3Interface(0x86d67c3D38D2bCeE722E601025C25a575021c6EA);
     }
 
 
@@ -50,18 +60,72 @@ contract preico is Ownable{
             ICOdatas.start=block.timestamp;
             ICOdatas.end = ICOdatas.start +oneyear;
     }
+    function _endSale() private {
+        if(address(this).balance>=6250 ether){
+            ICOdatas.end=block.timestamp;
+        }
+    }
+    function endSale() public onlyOwner {
+        ICOdatas.end=block.timestamp;
+
+    }
+    
+    function getLatestPriceAvax() public view returns (uint) {
+        (
+            /*uint80 roundID*/,
+            int price_,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = priceFeedAvax.latestRoundData();
+        return uint(price_);
+    }
+    function getLatestPriceEth() public view returns (uint) {
+        (
+            /*uint80 roundID*/,
+            int price_,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = priceFeedEth.latestRoundData();
+        return uint(price_);
+    }
+    function getTokenPriceAvax() public view returns(uint){
+        uint currentPriceAvax=getLatestPriceAvax();
+        uint currentPrice=(price.mul(10**8)).div(currentPriceAvax);
+        return currentPrice;
+
+    }
+    function getTokenPriceEth() public view returns(uint){
+        uint currentPriceEth=getLatestPriceEth();
+        uint currentPrice=(price.mul(10**8)).div(currentPriceEth);
+        return currentPrice;
+
+    }
 
     function allowance() public view onlyOwner returns(uint){
         return token.allowance(msg.sender, address(this));
     }
 
     //make sure you approve tokens to this contract address
-    function buy() public payable{
+    function buyInAvax(uint256 amount) public payable{
         require(_saleIsActive(),'Sale not active');
-        uint amount = _calculate(msg.value);
+        uint value = _calculateAvax(amount);
+        require(msg.value==value,"Not enough avax");
         require(ICOdatas.sold + amount<=ICOdatas.supply,'Not enough tokens, try buying lesser amount');
         token.transferFrom(wallet, msg.sender, amount);
         ICOdatas.sold+=amount;
+        _endSale();
+        
+    }
+    function buyInEth(uint256 amount) public payable{
+        require(_saleIsActive(),'Sale not active');
+        uint value = _calculateEth(amount);
+        require(msg.value==value,"Not enough Eth");
+        require(ICOdatas.sold + amount<=ICOdatas.supply,'Not enough tokens, try buying lesser amount');
+        token.transferFrom(wallet, msg.sender, amount);
+        ICOdatas.sold+=amount;
+        _endSale();
         
     }
 
@@ -75,8 +139,12 @@ contract preico is Ownable{
     }
 
 
-    function _calculate(uint value) public view returns(uint){
-        return value*ICOdatas.rate;
+    function _calculateAvax(uint value) public view returns(uint){
+        return value.mul(getLatestPriceAvax());
+    }
+    
+    function _calculateEth(uint value) public view returns(uint){
+        return value.mul(getLatestPriceEth());
     }
 
     function tokensLeft() public view returns(uint){
