@@ -3,7 +3,7 @@ require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 
 /** @type import('hardhat/config').HardhatUserConfig */
-const INFURA_API_KEY = "954a2e3e96cd40119761ea5b41a4b9bc";
+const INFURA_API_KEY = "ab145ac4d90b4df2b5970a21a4b63da7";
 
 // Replace this private key with your Goerli account private key
 // To export your private key from Metamask, open Metamask and
@@ -25,26 +25,26 @@ module.exports = {
   },
 
   networks: {
-    avalancheTest: {
-    url: `https://avalanche-fuji.infura.io/v3/${INFURA_API_KEY}`,
-    gasPrice: 225000000000,
-    chainId: 43113,
-    accounts: [AVAX_PRIVATE_KEY]
-  },
-    // ropsten: {
-    //   url:  `https://ropsten.infura.io/v3/${INFURA_API_KEY}`,
-    //   gasPrice: 225000000000,
-    //   accounts: [AVAX_PRIVATE_KEY]
-    // }
+  //   avalancheTest: {
+  //   url: `https://avalanche-fuji.infura.io/v3/${INFURA_API_KEY}`,
+  //   gasPrice: 225000000000,
+  //   chainId: 43113,
+  //   accounts: [AVAX_PRIVATE_KEY]
+  // },
+    goerli: {
+      url:  `https://goerli.infura.io/v3/${INFURA_API_KEY}`,
+      //gasPrice: 225000000000,
+      accounts: [AVAX_PRIVATE_KEY]
+    }
     
   
     },
-    // etherscan: {
-    //   apiKey: {
-    //     ropsten: 'HZ8X2WD392APJACN5WE5XX3YV7SZCXEQU4'
-    /// avax TENTZEIRN4STUCUHB9R5NTGQ1R94E41PYI
-    //   }
-    // }
+    etherscan: {
+      apiKey: {
+        goerli: 'HZ8X2WD392APJACN5WE5XX3YV7SZCXEQU4'
+    //avax TENTZEIRN4STUCUHB9R5NTGQ1R94E41PYI
+      }
+    }
   }
     // ropsten: {
     //   url: `https://avalanche-fuji.infura.io/v3/${INFURA_API_KEY}`,

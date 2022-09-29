@@ -27,10 +27,13 @@ contract preico is Ownable{
 
 
     IERC20 private token;
-    AggregatorV3Interface internal priceFeedAvax;
-    AggregatorV3Interface internal priceFeedEth;
+    //AggregatorV3Interface internal priceFeedAvax;
+    //AggregatorV3Interface internal priceFeedEth;
+    AggregatorV3Interface internal priceFeed;
 
-    uint constant price =10;//USD
+
+    uint public tokenPrice ;//USD
+    uint public currentPriceEth;
 
     address payable private immutable wallet;
 
@@ -50,8 +53,11 @@ contract preico is Ownable{
         token = IERC20(_token);
         wallet = _wallet;
         ICOdatas=ICOdata(10, 900000000 ,0,0,0);
-        priceFeedAvax = AggregatorV3Interface(0x5498BB86BC934c8D34FDA08E81D444153d0D06aD);
-        priceFeedEth=AggregatorV3Interface(0x86d67c3D38D2bCeE722E601025C25a575021c6EA);
+        //priceFeedAvax = AggregatorV3Interface(0x5498BB86BC934c8D34FDA08E81D444153d0D06aD);
+        //priceFeedEth=AggregatorV3Interface(0x86d67c3D38D2bCeE722E601025C25a575021c6EA);
+        priceFeed = AggregatorV3Interface(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
+
+        
     }
 
 
@@ -69,58 +75,64 @@ contract preico is Ownable{
         ICOdatas.end=block.timestamp;
 
     }
+    function setLatestPrice() public onlyOwner{
+        (
+            /*uint80 roundID*/,
+            int price_,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = priceFeed.latestRoundData();
+        currentPriceEth= uint(price_);
+    }
     
-    function getLatestPriceAvax() public view returns (uint) {
-        (
-            /*uint80 roundID*/,
-            int price_,
-            /*uint startedAt*/,
-            /*uint timeStamp*/,
-            /*uint80 answeredInRound*/
-        ) = priceFeedAvax.latestRoundData();
-        return uint(price_);
-    }
-    function getLatestPriceEth() public view returns (uint) {
-        (
-            /*uint80 roundID*/,
-            int price_,
-            /*uint startedAt*/,
-            /*uint timeStamp*/,
-            /*uint80 answeredInRound*/
-        ) = priceFeedEth.latestRoundData();
-        return uint(price_);
-    }
-    function getTokenPriceAvax() public view returns(uint){
-        uint currentPriceAvax=getLatestPriceAvax();
-        uint currentPrice=(price.mul(10**8)).div(currentPriceAvax);
-        return currentPrice;
+    // function getLatestPriceAvax() public view returns (uint) {
+    //     (
+    //         /*uint80 roundID*/,
+    //         int price_,
+    //         /*uint startedAt*/,
+    //         /*uint timeStamp*/,
+    //         /*uint80 answeredInRound*/
+    //     ) = priceFeedAvax.latestRoundData();
+    //     return uint(price_);
+    // }
+    // function getLatestPriceEth() public view returns (uint) {
+    //     (
+    //         /*uint80 roundID*/,
+    //         int price_,
+    //         /*uint startedAt*/,
+    //         /*uint timeStamp*/,
+    //         /*uint80 answeredInRound*/
+    //     ) = priceFeedEth.latestRoundData();
+    //     return uint(price_);
+    // }
+ 
 
+    function setTokenPrice() public onlyOwner{
+        uint256 x =10**9;
+        tokenPrice = (x).div(currentPriceEth);
     }
-    function getTokenPriceEth() public view returns(uint){
-        uint currentPriceEth=getLatestPriceEth();
-        uint currentPrice=(price.mul(10**8)).div(currentPriceEth);
-        return currentPrice;
+    // function getTokenPriceAvax() public view returns(uint){
+    //     uint currentPriceAvax=getLatestPriceAvax();
+    //     uint currentPrice=(price.mul(10**8)).div(currentPriceAvax);
+    //     return currentPrice;
 
-    }
+    // }
+    // function getTokenPriceEth() public view returns(uint){
+    //     uint currentPriceEth=getLatestPriceEth();
+    //     uint currentPrice=(price.mul(10**8)).div(currentPriceEth);
+    //     return currentPrice;
+
+    // }
 
     function allowance() public view onlyOwner returns(uint){
         return token.allowance(msg.sender, address(this));
     }
 
     //make sure you approve tokens to this contract address
-    function buyInAvax(uint256 amount) public payable{
+        function buy(uint256 amount) public payable{
         require(_saleIsActive(),'Sale not active');
-        uint value = _calculateAvax(amount);
-        require(msg.value==value,"Not enough avax");
-        require(ICOdatas.sold + amount<=ICOdatas.supply,'Not enough tokens, try buying lesser amount');
-        token.transferFrom(wallet, msg.sender, amount);
-        ICOdatas.sold+=amount;
-        _endSale();
-        
-    }
-    function buyInEth(uint256 amount) public payable{
-        require(_saleIsActive(),'Sale not active');
-        uint value = _calculateEth(amount);
+        uint value = _calculate(amount);
         require(msg.value==value,"Not enough Eth");
         require(ICOdatas.sold + amount<=ICOdatas.supply,'Not enough tokens, try buying lesser amount');
         token.transferFrom(wallet, msg.sender, amount);
@@ -128,6 +140,26 @@ contract preico is Ownable{
         _endSale();
         
     }
+    // function buyInAvax(uint256 amount) public payable{
+    //     require(_saleIsActive(),'Sale not active');
+    //     uint value = _calculateAvax(amount);
+    //     require(msg.value==value,"Not enough avax");
+    //     require(ICOdatas.sold + amount<=ICOdatas.supply,'Not enough tokens, try buying lesser amount');
+    //     token.transferFrom(wallet, msg.sender, amount);
+    //     ICOdatas.sold+=amount;
+    //     _endSale();
+        
+    // }
+    // function buyInEth(uint256 amount) public payable{
+    //     require(_saleIsActive(),'Sale not active');
+    //     uint value = _calculateEth(amount);
+    //     require(msg.value==value,"Not enough Eth");
+    //     require(ICOdatas.sold + amount<=ICOdatas.supply,'Not enough tokens, try buying lesser amount');
+    //     token.transferFrom(wallet, msg.sender, amount);
+    //     ICOdatas.sold+=amount;
+    //     _endSale();
+        
+    // }
 
     function _saleIsActive() private view returns(bool){
         if(block.timestamp>=ICOdatas.end && 
@@ -138,14 +170,16 @@ contract preico is Ownable{
         else{return true;}
     }
 
-
-    function _calculateAvax(uint value) public view returns(uint){
-        return value.mul(getLatestPriceAvax());
+ function _calculate(uint value) public view returns(uint){
+        return value.mul(tokenPrice);
     }
+    // function _calculateAvax(uint value) public view returns(uint){
+    //     return value.mul(getLatestPriceAvax());
+    // }
     
-    function _calculateEth(uint value) public view returns(uint){
-        return value.mul(getLatestPriceEth());
-    }
+    // function _calculateEth(uint value) public view returns(uint){
+    //     return value.mul(getLatestPriceEth());
+    // }
 
     function tokensLeft() public view returns(uint){
         return ICOdatas.supply-ICOdatas.sold;
