@@ -52,7 +52,7 @@ contract preico is Ownable{
     {
         token = IERC20(_token);
         wallet = _wallet;
-        ICOdatas=ICOdata(10, 900000000 ,0,0,0);
+        ICOdatas=ICOdata(10,900000000000000000000000000,0,0,0);
         //priceFeedAvax = AggregatorV3Interface(0x5498BB86BC934c8D34FDA08E81D444153d0D06aD);
         //priceFeedEth=AggregatorV3Interface(0x86d67c3D38D2bCeE722E601025C25a575021c6EA);
         priceFeed = AggregatorV3Interface(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
@@ -133,10 +133,11 @@ contract preico is Ownable{
         function buy(uint256 amount) public payable{
         require(_saleIsActive(),'Sale not active');
         uint value = _calculate(amount);
+        uint _amount= amount*10**18;
         require(msg.value==value,"Not enough Eth");
         require(ICOdatas.sold + amount<=ICOdatas.supply,'Not enough tokens, try buying lesser amount');
-        token.transferFrom(wallet, msg.sender, amount);
-        ICOdatas.sold+=amount;
+        token.transferFrom(wallet, msg.sender, _amount);
+        ICOdatas.sold+=_amount;
         _endSale();
         
     }
