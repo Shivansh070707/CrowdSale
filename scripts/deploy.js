@@ -31,14 +31,14 @@ async function main() {
   // );
   
 
-  // const PREICO = await hre.ethers.getContractFactory("preico");
-  // const preico = await PREICO.deploy(add,'0x6e24689C13AeE0fabe6552f655607B71Cb425a44');
+  const PREICO = await hre.ethers.getContractFactory("preico");
+  const preico = await PREICO.deploy('0xf701Ac6E7D62504101855A24185b7451fd4a2fFF','0x6e24689C13AeE0fabe6552f655607B71Cb425a44');
 
-  // await preico.deployed();
+  await preico.deployed();
 
-  // console.log(
-  //   `private sale deployed to ${preico.address}`
-  // );
+  console.log(
+    `private sale deployed to ${preico.address}`
+  );
 
   // const ICO = await hre.ethers.getContractFactory("ICO");
   // const ico = await ICO.deploy(add,
@@ -65,7 +65,7 @@ async function main() {
 }
 async function verify(){
   let token="0xf701Ac6E7D62504101855A24185b7451fd4a2fFF";
-  let pre="0xd87283772acd6433BD52E0FF4D18fa13Ad4E3f1c";
+  let pre="0x9e24E856EC665EbB4B11C5F2D301835F7f445751";
   let dis="0x02572Cd32F43eB2c461ab74966c7654507F0ace2";
   let wallet="0x6e24689C13AeE0fabe6552f655607B71Cb425a44"
   // await hre.run("verify:verify", {
@@ -77,13 +77,14 @@ async function verify(){
   
   //   ],
   // });  
-  await hre.run("verify:verify", {
-    address: pre,
-    constructorArguments: [
-      token,
-      wallet
-    ],
-  });
+  // await hre.run("verify:verify", {
+  //   address: pre,
+  //   constructorArguments: [
+  //     token,
+  //     wallet
+  //   ]
+
+  // });
   await hre.run("verify:verify", {
     address: dis,
     constructorArguments: [

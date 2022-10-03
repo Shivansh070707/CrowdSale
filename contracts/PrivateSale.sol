@@ -32,8 +32,8 @@ contract preico is Ownable{
     AggregatorV3Interface internal priceFeed;
 
 
-    uint public tokenPrice ;//USD
-    uint public currentPriceEth;
+    uint public tokenPrice=7642621707402130 ;//USD
+    uint public currentPriceEth=130845152133;
 
     address payable private immutable wallet;
 
@@ -109,8 +109,8 @@ contract preico is Ownable{
  
 
     function setTokenPrice() public onlyOwner{
-        uint256 x =10**9;
-        tokenPrice = (x).div(currentPriceEth);
+        uint256 x =10**27;
+        tokenPrice = x/currentPriceEth;
     }
     // function getTokenPriceAvax() public view returns(uint){
     //     uint currentPriceAvax=getLatestPriceAvax();
@@ -162,12 +162,15 @@ contract preico is Ownable{
     // }
 
     function _saleIsActive() private view returns(bool){
-        if(block.timestamp>=ICOdatas.end && 
-            tokensLeft()==0)
+        if(block.timestamp>=ICOdatas.end )
         {
             return false;
         }
+        else if( tokensLeft()==0){return false;}
         else{return true;}
+    }
+    function isSaleActive() public view returns(bool){
+        return _saleIsActive();
     }
 
  function _calculate(uint value) public view returns(uint){
@@ -187,7 +190,7 @@ contract preico is Ownable{
 
 
     function weiRaised() public view returns(uint) {
-        return ICOdatas.sold/ICOdatas.rate;
+        return address(this).balance;
     }
 
     function claimWei() public onlyOwner {
@@ -200,7 +203,6 @@ contract preico is Ownable{
     //         return true;
     //     }else{return false;}
     // }
-
 
 }
 

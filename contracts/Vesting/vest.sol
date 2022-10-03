@@ -92,7 +92,7 @@ contract Vesting  {
         require(vesting.beneficiary != address(0x0), INVALID_VESTING_ID);
         require(!vesting.released , VESTING_ALREADY_RELEASED);
         // solhint-disable-next-line not-rely-on-time
-        require(block.timestamp >= vesting.releaseTime, NOT_VESTED);
+        require(block.timestamp >= vesting.releaseTime, "Cannot release before releaseTime");
 
         require(Token.balanceOf(address(this)) >= vesting.amount, INSUFFICIENT_BALANCE);
         vesting.released = true;
