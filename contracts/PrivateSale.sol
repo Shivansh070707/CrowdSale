@@ -32,8 +32,8 @@ contract preico is Ownable{
     AggregatorV3Interface internal priceFeed;
 
 
-    uint public tokenPrice=7642621707402130 ;//USD
-    uint public currentPriceEth=130845152133;
+    // uint public tokenPrice=7642621707402130 ;//USD
+    // uint public currentPriceEth=130845152133;
 
     address payable private immutable wallet;
 
@@ -55,7 +55,7 @@ contract preico is Ownable{
         ICOdatas=ICOdata(10,900000000000000000000000000,0,0,0);
         //priceFeedAvax = AggregatorV3Interface(0x5498BB86BC934c8D34FDA08E81D444153d0D06aD);
         //priceFeedEth=AggregatorV3Interface(0x86d67c3D38D2bCeE722E601025C25a575021c6EA);
-        priceFeed = AggregatorV3Interface(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
+        priceFeed = AggregatorV3Interface(0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada);
 
         
     }
@@ -75,7 +75,7 @@ contract preico is Ownable{
         ICOdatas.end=block.timestamp;
 
     }
-    function setLatestPrice() public onlyOwner{
+    function LatestPriceMatic() public view returns(uint256){
         (
             /*uint80 roundID*/,
             int price_,
@@ -83,7 +83,8 @@ contract preico is Ownable{
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
         ) = priceFeed.latestRoundData();
-        currentPriceEth= uint(price_);
+         return  uint(price_);
+      
     }
     
     // function getLatestPriceAvax() public view returns (uint) {
@@ -108,9 +109,10 @@ contract preico is Ownable{
     // }
  
 
-    function setTokenPrice() public onlyOwner{
+    function TokenPrice() public view returns(uint256){
         uint256 x =10**27;
-        tokenPrice = x/currentPriceEth;
+       uint256 tokenPrice = x/LatestPriceMatic();
+       return tokenPrice;
     }
     // function getTokenPriceAvax() public view returns(uint){
     //     uint currentPriceAvax=getLatestPriceAvax();
@@ -134,7 +136,7 @@ contract preico is Ownable{
         require(_saleIsActive(),'Sale not active');
         uint value = _calculate(amount);
         uint _amount= amount*10**18;
-        require(msg.value==value,"Not enough Eth");
+        require(msg.value>=value,"Not enough Eth");
         require(ICOdatas.sold + amount<=ICOdatas.supply,'Not enough tokens, try buying lesser amount');
         token.transferFrom(wallet, msg.sender, _amount);
         ICOdatas.sold+=_amount;
@@ -175,7 +177,7 @@ contract preico is Ownable{
     }
 
  function _calculate(uint value) public view returns(uint){
-        return value.mul(tokenPrice);
+        return value.mul(TokenPrice());
     }
     // function _calculateAvax(uint value) public view returns(uint){
     //     return value.mul(getLatestPriceAvax());

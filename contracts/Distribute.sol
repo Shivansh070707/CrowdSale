@@ -34,11 +34,11 @@ contract Distribute is Context {
     }
     // Token Time lock
 
-    address public foundersTimelock=0x895aadbe123Fc95C95010cDCB5431aD9F09Baa70;
-    address public PublicTimelock=0x2381C4F2026C4D7C12EE5090658E7aFB9bA5f6A8;
-    address public MarketingTimelock=0x788eafA52d6CC7Aab5dE55398A5f7B5778b99C7D;
-    address public AdvisorTimelock=0x694DAb2e697e3ed65143347D73483B970c64433e;
-    address public EcoSystemTimelock=0xF72663305dF976bA8c1b44Ceab69B7946d1B696B;
+    address public foundersTimelock=0xFC347fd6D85AcCd900D2671ce1245018dCB26b75;
+    address public PublicTimelock=0x2aE1679128E73Af1E20ED3D574eA2e578F1580cc;
+    address public MarketingTimelock=0x2709D28A0D5E422360DdB32eD7BBfd5C6a31FEd9;
+    address public AdvisorTimelock=0x62b461408c3C36032f592668285DDaaa29F72324;
+    address public EcoSystemTimelock=0x19C3CAfdFF6dBe7d75FDf82FF2E601126311f680;
 
     bool private _finalized;
     event CrowdsaleFinalized();
